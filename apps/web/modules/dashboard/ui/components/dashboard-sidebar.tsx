@@ -2,6 +2,7 @@
 
 import { OrganizationSwitcher, UserButton } from "@clerk/nextjs";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarRail } from "@workspace/ui/components/sidebar";
+import { cn } from "@workspace/ui/lib/utils";
 import { url } from "inspector";
 import { CreditCardIcon, InboxIcon, LayoutDashboardIcon, LibraryBigIcon, Mic, PaletteIcon } from "lucide-react";
 import Link from "next/link";
@@ -94,6 +95,9 @@ export default function DashboardSidebar() {
                                     <SidebarMenuButton
                                         asChild
                                         isActive={isActive(item.url)}
+                                        className={cn(
+                                            isActive(item.url) && "bg-gradient-to-b from-sidebar-primary to-[#0b63f3]! text-sidebar-primary-foreground! hover:to-[#0b63f3]/90!",
+                                        )}
                                         tooltip={item.title}>
                                         <Link href={item.url}>
                                             <item.icon className="h-5 w-5" />
@@ -117,6 +121,9 @@ export default function DashboardSidebar() {
                                     <SidebarMenuButton
                                         asChild
                                         isActive={isActive(item.url)}
+                                        className={cn(
+                                            isActive(item.url) && "bg-gradient-to-b from-sidebar-primary to-[#0b63f3]! text-sidebar-primary-foreground! hover:to-[#0b63f3]/90!",
+                                        )}
                                         tooltip={item.title}>
                                         <Link href={item.url}>
                                             <item.icon className="h-5 w-5" />
@@ -140,6 +147,9 @@ export default function DashboardSidebar() {
                                     <SidebarMenuButton
                                         asChild
                                         isActive={isActive(item.url)}
+                                        className={cn(
+                                            isActive(item.url) && "bg-gradient-to-b from-sidebar-primary to-[#0b63f3]! text-sidebar-primary-foreground! hover:to-[#0b63f3]/90!",
+                                        )}
                                         tooltip={item.title}>
                                         <Link href={item.url}>
                                             <item.icon className="h-5 w-5" />
