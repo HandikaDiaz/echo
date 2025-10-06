@@ -19,6 +19,6 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts"
-  ],
+, "../widget/modules/widget/ui/views/widget-view.tsx"  ],
   "exclude": ["node_modules"]
 }
