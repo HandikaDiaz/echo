@@ -1,3 +1,4 @@
+"use client";
 import WidgetHeader from "@/modules/widget/ui/components/widget-header";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { api } from "@workspace/backend/_generated/api";
@@ -6,17 +7,24 @@ import { Button } from "@workspace/ui/components/button";
 import { Form, FormControl, FormField, FormItem } from "@workspace/ui/components/form";
 import { Input } from "@workspace/ui/components/input";
 import { useMutation } from "convex/react";
+import { useAtomValue, useSetAtom } from "jotai";
 import { useForm } from "react-hook-form";
 import z from "zod";
+import { contactSessionIdAtomFamily, organizationIdAtom } from "@/modules/widget/atoms/widget-atoms";
 
 const formSchema = z.object({
     name: z.string().min(1, "Name is required"),
     email: z.string().email("Invalid email address"),
 });
 
-const organizationId = "00000000-0000-0000-0000-000000000000";
+const organizationId = "123";
 
 export default function WidgetAuthScreen() {
+    const organizationId = useAtomValue(organizationIdAtom);
+    const setContactSessionId = useSetAtom(
+        contactSessionIdAtomFamily(organizationId || "")
+    );
+
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -53,7 +61,7 @@ export default function WidgetAuthScreen() {
             metadata,
         });
 
-        console.log({ contactSessionId });
+        setContactSessionId(contactSessionId);
     };
 
     return (
