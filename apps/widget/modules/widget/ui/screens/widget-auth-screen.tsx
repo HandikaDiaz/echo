@@ -1,4 +1,5 @@
 "use client";
+import { contactSessionIdAtomFamily, organizationIdAtom } from "@/modules/widget/atoms/widget-atoms";
 import WidgetHeader from "@/modules/widget/ui/components/widget-header";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { api } from "@workspace/backend/_generated/api";
@@ -10,7 +11,6 @@ import { useMutation } from "convex/react";
 import { useAtomValue, useSetAtom } from "jotai";
 import { useForm } from "react-hook-form";
 import z from "zod";
-import { contactSessionIdAtomFamily, organizationIdAtom } from "@/modules/widget/atoms/widget-atoms";
 
 const formSchema = z.object({
     name: z.string().min(1, "Name is required"),
@@ -40,7 +40,7 @@ export default function WidgetAuthScreen() {
             return;
         };
 
-        const metadata: Doc<"contactSession">["metadata"] = {
+        const metadata: Doc<"contactSessions">["metadata"] = {
             userAgent: navigator.userAgent,
             language: navigator.language,
             languages: navigator.languages?.join(","),
