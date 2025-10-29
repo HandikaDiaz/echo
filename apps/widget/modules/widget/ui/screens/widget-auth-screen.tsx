@@ -1,5 +1,5 @@
 "use client";
-import { contactSessionIdAtomFamily, organizationIdAtom } from "@/modules/widget/atoms/widget-atoms";
+import { contactSessionIdAtomFamily, organizationIdAtom, screenAtom } from "@/modules/widget/atoms/widget-atoms";
 import WidgetHeader from "@/modules/widget/ui/components/widget-header";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { api } from "@workspace/backend/_generated/api";
@@ -17,9 +17,9 @@ const formSchema = z.object({
     email: z.string().email("Invalid email address"),
 });
 
-const organizationId = "123";
-
 export default function WidgetAuthScreen() {
+    const setScreen = useSetAtom(screenAtom);
+
     const organizationId = useAtomValue(organizationIdAtom);
     const setContactSessionId = useSetAtom(
         contactSessionIdAtomFamily(organizationId || "")
@@ -62,6 +62,7 @@ export default function WidgetAuthScreen() {
         });
 
         setContactSessionId(contactSessionId);
+        setScreen("selection");
     };
 
     return (

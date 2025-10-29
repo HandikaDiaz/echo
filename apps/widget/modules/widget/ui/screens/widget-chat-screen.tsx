@@ -5,11 +5,14 @@ import { toUIMessages, useThreadMessages } from "@convex-dev/agent/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { api } from "@workspace/backend/_generated/api";
 import { AIConversation, AIConversationContent } from "@workspace/ui/components/ai/conversation";
-import { AIMessage, AIMessageContent } from "@workspace/ui/components/ai/message";
 import { AIInput, AIInputSubmit, AIInputTextarea, AIInputToolbar, AIInputTools } from "@workspace/ui/components/ai/input";
+import { AIMessage, AIMessageContent } from "@workspace/ui/components/ai/message";
 import { AIResponse } from "@workspace/ui/components/ai/response";
 import { Button } from "@workspace/ui/components/button";
+import DicebarAvatar from "@workspace/ui/components/dicebear-avatar";
 import { Form, FormField } from "@workspace/ui/components/form";
+import InfiniteScrollTrigger from "@workspace/ui/components/infinite-scroll-trigger";
+import { useInfiniteScroll } from "@workspace/ui/hooks/use-infinite-scroll";
 import { useAction, useQuery } from "convex/react";
 import { useAtomValue, useSetAtom } from "jotai";
 import { ArrowLeftIcon, MenuIcon } from "lucide-react";
@@ -49,6 +52,12 @@ export default function WidgetChatScreen() {
             : "skip",
         { initialNumItems: 10 }
     );
+
+    const { topElementRef, hanldeLoadMore, canLoadMore, isLoadingMore } = useInfiniteScroll({
+        status: messages.status,
+        loadMore: messages.loadMore,
+        loadSize: 10,
+    });
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -95,14 +104,27 @@ export default function WidgetChatScreen() {
             </WidgetHeader>
             <AIConversation>
                 <AIConversationContent>
+                    <InfiniteScrollTrigger
+                        canLoadMore={canLoadMore}
+                        isLoadingMore={isLoadingMore}
+                        onLoadMore={hanldeLoadMore}
+                        ref={topElementRef}
+                    />
                     {toUIMessages(messages.results ?? [])?.map((message) => {
                         return (
                             <AIMessage
                                 from={message.role === "user" ? "user" : "assistant"}
                                 key={message.id}>
                                 <AIMessageContent>
-                                    <AIResponse>{message.content}</AIResponse>
+                                    <AIResponse>{message.text}</AIResponse>
                                 </AIMessageContent>
+                                {message.role === "assistant" && (
+                                    <DicebarAvatar
+                                        seed="assistant"
+                                        size={32}
+                                        badgeImageUrl="/logo.svg"
+                                    />
+                                )}
                             </AIMessage>
                         )
                     })}
