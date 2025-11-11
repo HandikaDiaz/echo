@@ -7,6 +7,7 @@ import { useMutation } from "convex/react";
 import { useAtomValue, useSetAtom } from "jotai";
 import { ChevronRightIcon, MessageSquareIcon } from "lucide-react";
 import { useState } from "react";
+import WidgetFooter from "../components/widget-footer";
 
 export default function WidgetSelesctionScreen() {
     const setScreen = useSetAtom(screenAtom);
@@ -74,6 +75,7 @@ export default function WidgetSelesctionScreen() {
                     <ChevronRightIcon />
                 </Button>
             </div>
+            <WidgetFooter />
         </>
     );
 };
