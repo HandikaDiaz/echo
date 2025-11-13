@@ -2,6 +2,7 @@ import AuthGuard from '@/modules/auth/ui/components/auth-guard';
 import OrganizantionGuard from '@/modules/auth/ui/components/organization-guatd';
 import DashboardSidebar from '@/modules/dashboard/ui/components/dashboard-sidebar';
 import { SidebarProvider } from '@workspace/ui/components/sidebar';
+import { Provider } from 'jotai';
 import { cookies } from 'next/headers';
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -11,12 +12,14 @@ export default async function DashboardLayout({ children }: { children: React.Re
     return (
         <AuthGuard>
             <OrganizantionGuard>
-                <SidebarProvider defaultOpen={defaultOpen}>
-                    <DashboardSidebar />
-                    <main className="flex flex-1 flex-col">
-                        {children}
-                    </main>
-                </SidebarProvider>
+                <Provider>
+                    <SidebarProvider defaultOpen={defaultOpen}>
+                        <DashboardSidebar />
+                        <main className="flex flex-1 flex-col">
+                            {children}
+                        </main>
+                    </SidebarProvider>
+                </Provider>
             </OrganizantionGuard>
         </AuthGuard>
     );
