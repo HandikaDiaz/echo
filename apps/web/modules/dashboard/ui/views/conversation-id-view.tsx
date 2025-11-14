@@ -1,19 +1,25 @@
 "use client";
+import { toUIMessages, useThreadMessages } from "@convex-dev/agent/react";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { api } from "@workspace/backend/_generated/api";
 import { Id } from "@workspace/backend/_generated/dataModel";
-import { Button } from "@workspace/ui/components/button";
-import { useMutation, useQuery } from "convex/react";
-import { MoreHorizontalIcon, Wand2Icon } from "lucide-react";
-import { z } from "zod";
-import { Form, useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { AIConversation, AIConversationContent, AIConversationScrollButton } from "@workspace/ui/components/ai/conversation";
-import { AIResponse } from "@workspace/ui/components/ai/response";
-import { AIInput, AIInputSubmit, AIInputTextarea, AIInputButton, AIInputToolbar, AIInputTools } from "@workspace/ui/components/ai/input";
+import { AIInput, AIInputButton, AIInputSubmit, AIInputTextarea, AIInputToolbar, AIInputTools } from "@workspace/ui/components/ai/input";
 import { AIMessage, AIMessageContent } from "@workspace/ui/components/ai/message";
-import { toUIMessages, useThreadMessages } from "@convex-dev/agent/react";
+import { AIResponse } from "@workspace/ui/components/ai/response";
+import { Button } from "@workspace/ui/components/button";
 import DicebearAvatar from "@workspace/ui/components/dicebear-avatar";
 import { FormField } from "@workspace/ui/components/form";
+import { useAction, useMutation, useQuery } from "convex/react";
+import { MoreHorizontalIcon, Wand2Icon } from "lucide-react";
+import { useState } from "react";
+import { Form, useForm } from "react-hook-form";
+import { z } from "zod";
+import ConversationStatusButton from "../components/conversation-status-button";
+import { useInfiniteScroll } from "@workspace/ui/hooks/use-infinite-scroll";
+import InfiniteScrollTrigger from "@workspace/ui/components/infinite-scroll-trigger";
+import { cn } from "@workspace/ui/lib/utils";
+import { Skeleton } from "@workspace/ui/components/skeleton";
 
 const formSchema = z.object({
     message: z.string().min(1, "Message is required")
@@ -34,12 +40,40 @@ export default function ConversationIdView({
         { initialNumItems: 10, }
     );
 
+    const {
+        topElementRef,
+        hanldeLoadMore,
+        canLoadMore,
+        isLoadingMore
+    } = useInfiniteScroll({
+        status: messages.status,
+        loadMore: messages.loadMore,
+        loadSize: 10
+    })
+
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
             message: "",
         },
     });
+
+    const [isEnchancing, setIsEnchancing] = useState(false);
+    const enchanceResponse = useAction(api.private.messages.enchanceResponse);
+    const handleEnchanceResponse = async () => {
+        setIsEnchancing(true);
+        const currentValue = form.getValues("message");
+
+        try {
+            const response = await enchanceResponse({ prompt: currentValue });
+
+            form.setValue("message", response);
+        } catch (error) {
+            console.log(error);
+        } finally {
+            setIsEnchancing(false);
+        }
+    }
 
     const createMessage = useMutation(api.private.messages.create);
 
@@ -53,9 +87,41 @@ export default function ConversationIdView({
             form.reset();
         } catch (error) {
             console.log(error);
-
         }
     };
+
+    const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+    const updateConversationStatus = useMutation(api.private.conversations.updateStatus);
+    const handleToogleStatus = async () => {
+        if (!conversation) return;
+
+        setIsUpdatingStatus(true);
+
+        let newStatus: "unresolved" | "resolved" | "escalated";
+
+        if (conversation.status === "unresolved") {
+            newStatus = "escalated";
+        } else if (conversation.status === "escalated") {
+            newStatus = "resolved";
+        } else {
+            newStatus = "unresolved";
+        }
+
+        try {
+            await updateConversationStatus({
+                conversationId,
+                status: newStatus
+            });
+        } catch (error) {
+            console.log(error);
+        } finally {
+            setIsUpdatingStatus(false);
+        }
+    };
+
+    if(conversation === undefined || messages.status === "LoadingFirstPage") {
+        return <ConversationIdViewLoading />
+    }
 
     return (
         <div className="flex h-full flex-col bg-muted">
@@ -65,9 +131,22 @@ export default function ConversationIdView({
                     variant="ghost">
                     <MoreHorizontalIcon />
                 </Button>
+                {!!conversation && (
+                    <ConversationStatusButton
+                        status={conversation.status}
+                        onClick={handleToogleStatus}
+                        disabled={isUpdatingStatus}
+                    />
+                )}
             </header>
             <AIConversation className="max-h-[calc(100vh-180px)]">
                 <AIConversationContent>
+                    <InfiniteScrollTrigger
+                        ref={topElementRef}
+                        canLoadMore={canLoadMore}
+                        isLoadingMore={isLoadingMore}
+                        onLoadMore={hanldeLoadMore}
+                    />
                     {toUIMessages(messages.results ?? [])?.map((message) => (
                         <AIMessage
                             key={message.id}
@@ -98,7 +177,9 @@ export default function ConversationIdView({
                             render={({ field }) => (
                                 <AIInputTextarea
                                     disabled={
-                                        conversation?.status === "resolved" || form.formState.isSubmitting
+                                        conversation?.status === "resolved" ||
+                                        form.formState.isSubmitting ||
+                                        isEnchancing
                                     }
                                     onChange={field.onChange}
                                     onKeyDown={(e) => {
@@ -118,16 +199,23 @@ export default function ConversationIdView({
                         />
                         <AIInputToolbar>
                             <AIInputTools>
-                                <AIInputButton>
+                                <AIInputButton
+                                    onClick={handleEnchanceResponse}
+                                    disabled={
+                                        conversation?.status === "resolved" ||
+                                        isEnchancing ||
+                                        !form.formState.isValid
+                                    }>
                                     <Wand2Icon />
-                                    Enchance
+                                    {isEnchancing ? "Enchancing..." : "Enchance"}
                                 </AIInputButton>
                             </AIInputTools>
                             <AIInputSubmit
                                 disabled={
                                     conversation?.status === "resolved" ||
                                     !form.formState.isValid ||
-                                    form.formState.isSubmitting
+                                    form.formState.isSubmitting ||
+                                    isEnchancing
                                 }
                                 status="ready"
                                 type="submit"
@@ -137,5 +225,51 @@ export default function ConversationIdView({
                 </Form>
             </div>
         </div>
-    )
-}
+    );
+};
+
+export const ConversationIdViewLoading = () => {
+    return (
+        <div className="flex h-full flex-col bg-muted">
+            <header className="flex items-center justify-between border-b bg-background p-2.5">
+                <Button disabled size="sm" variant="ghost">
+                    <MoreHorizontalIcon />
+                </Button>
+            </header>
+            <AIConversation className="max-h-[calc(100vh-180px)]">
+                <AIConversationContent>
+                    {Array.from({ length: 8 }, (_, index) => {
+                        const isUser = index % 2 === 0;
+                        const widths = ["w-48", "w-60", "w-72"];
+                        const width = widths[index % widths.length];
+
+                        return (
+                            <div
+                                className={cn(
+                                    "group flex w-full items-end justify-end gap-2 py-2 [&>div]:max-w-[80%]",
+                                    isUser ? "is-user" : "is-assistant flex-row-reverse"
+                                )}
+                                key={index}>
+                                <Skeleton className={`h-9 ${width} rounded-lg bg-neutral-200`} />
+                                <Skeleton className="size-8 rounded-full bg-neutral-200" />
+                            </div>
+                        );
+                    })}
+                </AIConversationContent>
+            </AIConversation>
+
+            <div className="p-2">
+                <AIInput>
+                    <AIInputTextarea
+                        disabled
+                        placeholder="Type your response as an operator"
+                    />
+                    <AIInputToolbar>
+                        <AIInputTools />
+                        <AIInputSubmit disabled status="ready" />
+                    </AIInputToolbar>
+                </AIInput>
+            </div>
+        </div>
+    );
+};
