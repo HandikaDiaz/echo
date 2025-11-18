@@ -5,7 +5,7 @@ import { ConvexError, v } from "convex/values";
 import { components } from "../_generated/api";
 import { action, mutation, query } from "../_generated/server";
 import { supportAgent } from "../system/ai/agents/supportAgent";
-import { openai } from "@ai-sdk/openai";
+import { groq } from "@ai-sdk/groq";
 
 export const enchanceResponse = action({
     args: {
@@ -31,11 +31,11 @@ export const enchanceResponse = action({
         }
 
         const response = await generateText({
-            model: openai("gpt-4o-mini"),
+            model: groq("gemma2-9b-it"),
             messages: [
                 {
                     role: "system",
-                    content: "Enchance the operatior`s message to be more professional, clear, and helpful while maintaining their intent and key information",
+                    content: "Enchance the operator`s message to be more professional, clear, and helpful while maintaining their intent and key information",
                 },
                 {
                     role: "user",
@@ -92,6 +92,12 @@ export const create = mutation({
             throw new ConvexError({
                 code: "BAD_REQUEST",
                 message: "Conversation resolved",
+            });
+        }
+
+        if (conversation.status === "unresolved") {
+            await ctx.db.patch(args.conversationId, {
+                status: "escalated",
             });
         }
 

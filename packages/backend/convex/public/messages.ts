@@ -63,10 +63,15 @@ export const create = action({
                 }
             )
         } else {
-            await supportAgent.saveMessage(ctx, {
-                threadId: args.threadId,
-                prompt: args.prompt,
-            });
+            await supportAgent.generateText(
+                ctx,
+                {
+                    threadId: args.threadId,
+                },
+                {
+                    prompt: args.prompt,
+                }
+            );
         }
     },
 });
