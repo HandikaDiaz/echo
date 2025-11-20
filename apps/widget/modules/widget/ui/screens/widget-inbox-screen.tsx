@@ -33,7 +33,7 @@ export default function WidgetInboxScreen() {
         },
     );
 
-    const { topElementRef, hanldeLoadMore, canLoadMore, isLoadingMore } = useInfiniteScroll({
+    const { topElementRef, handleLoadMore, canLoadMore, isLoadingMore } = useInfiniteScroll({
         status: conversations.status,
         loadMore: conversations.loadMore,
         loadSize: 10,
@@ -81,7 +81,7 @@ export default function WidgetInboxScreen() {
                     <InfiniteScrollTrigger
                         canLoadMore={canLoadMore}
                         isLoadingMore={isLoadingMore}
-                        onLoadMore={hanldeLoadMore}
+                        onLoadMore={handleLoadMore}
                         ref={topElementRef}
                     />
             </div>

@@ -42,7 +42,7 @@ export default function ConversationIdView({
 
     const {
         topElementRef,
-        hanldeLoadMore,
+        handleLoadMore,
         canLoadMore,
         isLoadingMore
     } = useInfiniteScroll({
@@ -145,7 +145,7 @@ export default function ConversationIdView({
                         ref={topElementRef}
                         canLoadMore={canLoadMore}
                         isLoadingMore={isLoadingMore}
-                        onLoadMore={hanldeLoadMore}
+                        onLoadMore={handleLoadMore}
                     />
                     {toUIMessages(messages.results ?? [])?.map((message) => (
                         <AIMessage

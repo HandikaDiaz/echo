@@ -38,7 +38,7 @@ export default function ConversationsPanel() {
 
     const {
         topElementRef,
-        hanldeLoadMore,
+        handleLoadMore,
         canLoadMore,
         isLoadingMore,
         isLoadingFirstPage
@@ -150,7 +150,7 @@ export default function ConversationsPanel() {
                         <InfiniteScrollTrigger
                             canLoadMore={canLoadMore}
                             isLoadingMore={isLoadingMore}
-                            onLoadMore={hanldeLoadMore}
+                            onLoadMore={handleLoadMore}
                             ref={topElementRef} />
                     </div>
                 </ScrollArea>
