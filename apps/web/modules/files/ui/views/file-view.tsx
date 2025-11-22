@@ -35,9 +35,6 @@ export default function FileView() {
         loadSize: 10
     });
 
-    console.log(api.private.file.list);
-    
-
     const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 

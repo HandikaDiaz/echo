@@ -6,6 +6,7 @@ import { components } from "../_generated/api";
 import { action, mutation, query } from "../_generated/server";
 import { supportAgent } from "../system/ai/agents/supportAgent";
 import { groq } from "@ai-sdk/groq";
+import { OPERATOR_MESSAGE_ENHANCEMENT_PROMPT } from "../system/ai/constants";
 
 export const enchanceResponse = action({
     args: {
@@ -35,7 +36,7 @@ export const enchanceResponse = action({
             messages: [
                 {
                     role: "system",
-                    content: "Enchance the operator`s message to be more professional, clear, and helpful while maintaining their intent and key information",
+                    content: OPERATOR_MESSAGE_ENHANCEMENT_PROMPT 
                 },
                 {
                     role: "user",
